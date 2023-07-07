@@ -8,13 +8,13 @@
 
 
 from torch.utils.data import DataLoader,Dataset
-from tokenier import generate_words_dict,tokenier
+from utils.tokenier import tokenier
 from config.config import Config
 import torch
 
 
 class MyDatasets(Dataset):
-    def __init__(self):
+    def __init__(self,config:Config):
         token_words_list, mask, labels = tokenier(config)
         self.token_words_list = torch.tensor(token_words_list)
         self.mask = torch.tensor(mask)
@@ -32,12 +32,12 @@ class MyDatasets(Dataset):
 
 
 
-
-if __name__ == '__main__':
-    config = Config()
-    mydata = MyDatasets()
-    mydataloader = DataLoader(mydata,batch_size=8)
-    for token,labels in mydataloader:
-        print(token)
-        print(labels)
-        break
+#
+# if __name__ == '__main__':
+# config = Config()
+# mydata = MyDatasets()
+# mydataloader = DataLoader(mydata,batch_size=8)
+# for token,labels in mydataloader:
+#     print(token)
+#     print(labels)
+#     break

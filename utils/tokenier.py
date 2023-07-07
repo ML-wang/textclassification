@@ -9,6 +9,7 @@ import os
 import pandas as pd
 import jieba
 from config.config import Config
+from transformers import BertModel,BertTokenizer
 
 import json
 def generate_words_dict(config:Config):
@@ -57,28 +58,35 @@ def tokenier(config:Config):
         labels.append(sen.label)
     token_words_list = []
     mask = []
-    for word_list in words_list:
-        temp_list = []
-        if len(word_list) <= config.max_len:
-            mask.append(len(word_list)*[1]+(20-len(word_list))*[0])
-            word_list.extend(['PAD']*(20-len(word_list)))
-        else:
-            word_list = word_list[:20]
-            mask.append(20* [1])
-        for word in word_list:
-            temp_list.append(words2tag.get(word,0))
-        token_words_list.append(temp_list)
-    assert len(labels) == len(token_words_list)
-    return token_words_list,mask,labels
+    if not config.bert:
+        for word_list in words_list:
+            temp_list = []
+            if len(word_list) <= config.max_len:
+                mask.append(len(word_list)*[1]+(20-len(word_list))*[0])
+                word_list.extend(['PAD']*(20-len(word_list)))
+            else:
+                word_list = word_list[:20]
+                mask.append(20* [1])
+            for word in word_list:
+                temp_list.append(words2tag.get(word,0))
+            token_words_list.append(temp_list)
+        assert len(labels) == len(token_words_list)
+        return token_words_list,mask,labels
+    else:
+        tokenier = BertTokenizer.from_pretrained('bert-base-chinese')
+        bert_token = tokenier(words_list,max_length=20,padding='max_length')
+        return bert_token['input_ids'],bert_token['attention_mask'],labels
 
 
 
 
-if __name__ == '__main__':
-    config = Config()
-    tag2words, words2tag = generate_words_dict(config)
-    token_words_list, mask, labels =  tokenier(config)
-    print('')
+
+#
+# if __name__ == '__main__':
+#     config = Config()
+#     tag2words, words2tag = generate_words_dict(config)
+#     token_words_list, mask, labels =  tokenier(config)
+#     print('')
 
 
 
